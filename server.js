@@ -9,7 +9,6 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const SITE_NAME = process.env.SITE_NAME || 'Haven Trail';
 
 // Ensure data dir
 if (!fs.existsSync(path.join(__dirname, 'data'))){
@@ -27,26 +26,40 @@ app.use(session({
   saveUninitialized: false,
 }));
 
-// Make site name available to views
-app.use((req, res, next) => {
-  res.locals.siteName = SITE_NAME;
-  res.locals.currentUser = req.session.user || null;
-  next();
-});
-
 // Initialize DB
 const db = require('./src/models/db');
 db.init();
 
-// Routes
-const publicRoutes = require('./src/routes/public');
-const adminRoutes = require('./src/routes/admin');
-const paymentRoutes = require('./src/routes/payments');
+// Settings loader
+const settings = require('./src/models/settings');
 
-app.use('/', publicRoutes);
-app.use('/admin', adminRoutes);
-app.use('/payments', paymentRoutes);
+(async () => {
+  try {
+    await settings.load();
 
-app.listen(PORT, () => {
-  console.log(`${SITE_NAME} listening on http://localhost:${PORT}`);
-});
+    // Make site settings available to views on each request
+    app.use((req, res, next) => {
+      res.locals.siteName = settings.get('site_name', process.env.SITE_NAME || 'Haven Trail');
+      res.locals.welcomeText = settings.get('welcome_text', `Welcome to ${res.locals.siteName}.`);
+      res.locals.currentUser = req.session.user || null;
+      next();
+    });
+
+    // Routes
+    const publicRoutes = require('./src/routes/public');
+    const adminRoutes = require('./src/routes/admin');
+    const paymentRoutes = require('./src/routes/payments');
+
+    app.use('/', publicRoutes);
+    app.use('/admin', adminRoutes);
+    app.use('/payments', paymentRoutes);
+
+    app.listen(PORT, () => {
+      console.log(`${res.locals.siteName || 'Haven Trail'} listening on http://localhost:${PORT}`);
+    });
+
+  } catch (err) {
+    console.error('Failed to load settings or start server', err);
+    process.exit(1);
+  }
+})();

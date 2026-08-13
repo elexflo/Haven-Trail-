@@ -7,10 +7,14 @@
   <p>Total: $<%= booking.total %></p>
 
   <h3>Pay with</h3>
-  <form id="google-pay-form" method="post" action="/payments/googlepay/success">
-    <input type="hidden" name="booking_id" value="<%= booking.id %>">
-    <button type="submit">Simulate Google Pay (demo)</button>
-  </form>
+  <div id="gpay-button" data-booking-id="<%= booking.id %>" data-total="<%= booking.total %>"></div>
+  <noscript>
+    <form id="google-pay-form" method="post" action="/payments/googlepay/success">
+      <input type="hidden" name="booking_id" value="<%= booking.id %>">
+      <button type="submit">Simulate Google Pay (demo)</button>
+    </form>
+  </noscript>
 
   <p>Bank gateways (BML/MIB/SIB) are placeholders. Admin can add merchant credentials and enable integrations in the future.</p>
 </section>
+<script src="/js/checkout.js"></script>

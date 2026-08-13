@@ -16,12 +16,27 @@ router.get('/checkout', (req, res) => {
   });
 });
 
-// Placeholder for Google Pay success webhook (demo only)
+// Old form POST success (keeps compatibility)
 router.post('/googlepay/success', (req, res) => {
   const { booking_id } = req.body;
   const d = db.getDb();
   d.run('UPDATE bookings SET paid = 1 WHERE id = ?', [booking_id], (err) => {
     if (err) return res.status(500).send('DB error');
+    res.json({ success: true });
+    d.close();
+  });
+});
+
+// New endpoint to process Google Pay payment data from client
+router.post('/googlepay/process', (req, res) => {
+  const { booking_id, paymentData } = req.body;
+  if (!booking_id || !paymentData) return res.status(400).json({ success: false, message: 'Missing data' });
+
+  // In production: validate paymentData and send to payment gateway for capture/verification.
+  // For demo: mark booking as paid and return success.
+  const d = db.getDb();
+  d.run('UPDATE bookings SET paid = 1 WHERE id = ?', [booking_id], (err) => {
+    if (err) return res.status(500).json({ success: false, message: 'DB error' });
     res.json({ success: true });
     d.close();
   });

@@ -4,6 +4,7 @@ const db = require('../models/db');
 const multer = require('multer');
 const path = require('path');
 const bcrypt = require('bcrypt');
+const settings = require('../models/settings');
 
 // Upload config
 const uploadDir = path.join(__dirname, '../../public/uploads');
@@ -50,6 +51,36 @@ router.get('/', requireAdmin, (req, res) => {
     res.render('admin/dashboard', { bookings: rows });
     d.close();
   });
+});
+
+// Site settings editor
+router.get('/site-settings', requireAdmin, async (req, res) => {
+  try {
+    const site_name = settings.get('site_name', process.env.SITE_NAME || 'Haven Trail');
+    const welcome_text = settings.get('welcome_text', '');
+    const site_logo = settings.get('site_logo', '');
+    res.render('admin/settings', { site_name, welcome_text, site_logo });
+  } catch (err) {
+    res.status(500).send('Failed to load settings');
+  }
+});
+
+router.post('/site-settings', requireAdmin, upload.single('logo'), async (req, res) => {
+  try {
+    const { site_name, welcome_text } = req.body;
+    await settings.set('site_name', site_name || process.env.SITE_NAME || 'Haven Trail');
+    await settings.set('welcome_text', welcome_text || '');
+    if (req.file) {
+      const logoPath = `/uploads/${req.file.filename}`;
+      await settings.set('site_logo', logoPath);
+    }
+    // reload settings into memory
+    await settings.load();
+    res.redirect('/admin');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Failed to save settings');
+  }
 });
 
 // Rooms management

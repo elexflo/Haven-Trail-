@@ -2,10 +2,12 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const db = require('../models/db');
+const settings = require('../models/settings');
 
 // Home / Welcome
 router.get('/', (req, res) => {
-  res.render('index', { welcomeText: `Welcome to ${res.locals.siteName}. We are happy to host you in the Maldives. Add a bio in the admin panel.` });
+  // welcomeText is now provided via res.locals (set in server.js)
+  res.render('index');
 });
 
 // Rooms list

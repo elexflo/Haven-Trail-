@@ -44,6 +44,12 @@ function init(){
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )`);
 
+    // Settings table for site content
+    db.run(`CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    )`);
+
     // Seed admin user if not exists
     db.get('SELECT COUNT(*) as c FROM users', (err, row) => {
       if (err) return console.error(err);
@@ -55,6 +61,19 @@ function init(){
           console.log('Seeded admin user:', adminUser);
         });
       }
+    });
+
+    // Seed default site settings if not present
+    const defaultSiteName = process.env.SITE_NAME || 'Haven Trail';
+    const defaultWelcome = `Welcome to ${defaultSiteName}. We are happy to host you in the Maldives. Add a bio in the admin panel.`;
+
+    db.get('SELECT value FROM settings WHERE key = ?', ['site_name'], (err, row) => {
+      if (err) return console.error(err);
+      if (!row) db.run('INSERT INTO settings (key, value) VALUES (?,?)', ['site_name', defaultSiteName]);
+    });
+    db.get('SELECT value FROM settings WHERE key = ?', ['welcome_text'], (err, row) => {
+      if (err) return console.error(err);
+      if (!row) db.run('INSERT INTO settings (key, value) VALUES (?,?)', ['welcome_text', defaultWelcome]);
     });
 
   });
