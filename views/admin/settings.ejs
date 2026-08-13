@@ -1,0 +1,13 @@
+<%- include('../layout', { title: 'Site Settings' }) %>
+<section>
+  <h2>Site Settings</h2>
+  <form method="post" action="/admin/site-settings" enctype="multipart/form-data">
+    <label>Site name<br/><input name="site_name" value="<%= site_name %>"></label><br/>
+    <label>Welcome / Bio<br/><textarea name="welcome_text" rows="6" cols="60"><%= welcome_text %></textarea></label><br/>
+    <label>Logo (optional)<br/><input type="file" name="logo"></label><br/>
+    <% if (site_logo) { %>
+      <p>Current logo: <img src="<%= site_logo %>" style="height:60px"></p>
+    <% } %>
+    <button type="submit">Save</button>
+  </form>
+</section>
