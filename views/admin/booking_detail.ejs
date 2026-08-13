@@ -1,0 +1,21 @@
+<%- include('../layout', { title: 'Booking ' + booking.id }) %>
+<section>
+  <h2>Booking #<%= booking.id %></h2>
+  <p><strong>Name:</strong> <%= booking.name %></p>
+  <p><strong>Email:</strong> <%= booking.email %></p>
+  <p><strong>Phone:</strong> <%= booking.phone %></p>
+  <p><strong>Room:</strong> <%= booking.room_title %> (ID: <%= booking.room_id %>)</p>
+  <p><strong>Checkin:</strong> <%= booking.checkin %> - <strong>Checkout:</strong> <%= booking.checkout %></p>
+  <p><strong>Nights:</strong> <%= booking.nights %></p>
+  <p><strong>Total:</strong> $<%= booking.total %></p>
+  <p><strong>Paid:</strong> <%= booking.paid ? 'Yes' : 'No' %></p>
+
+  <form method="post" action="/admin/bookings/<%= booking.id %>/action">
+    <% if (!booking.paid) { %>
+      <button name="action" value="mark_paid">Mark as Paid</button>
+    <% } else { %>
+      <button name="action" value="mark_unpaid">Mark as Unpaid</button>
+    <% } %>
+    <button name="action" value="cancel" onclick="return confirm('Cancel this booking?');">Cancel Booking</button>
+  </form>
+</section>

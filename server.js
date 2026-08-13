@@ -41,6 +41,7 @@ const settings = require('./src/models/settings');
     app.use((req, res, next) => {
       res.locals.siteName = settings.get('site_name', process.env.SITE_NAME || 'Haven Trail');
       res.locals.welcomeText = settings.get('welcome_text', `Welcome to ${res.locals.siteName}.`);
+      res.locals.siteLogo = settings.get('site_logo', '');
       res.locals.currentUser = req.session.user || null;
       next();
     });

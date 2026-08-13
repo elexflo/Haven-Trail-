@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const db = require('../models/db');
+const mailer = require('../utils/mailer');
 
 // Checkout page after booking
 router.get('/checkout', (req, res) => {
@@ -20,8 +22,14 @@ router.get('/checkout', (req, res) => {
 router.post('/googlepay/success', (req, res) => {
   const { booking_id } = req.body;
   const d = db.getDb();
-  d.run('UPDATE bookings SET paid = 1 WHERE id = ?', [booking_id], (err) => {
+  d.run('UPDATE bookings SET paid = 1 WHERE id = ?', [booking_id], async (err) => {
     if (err) return res.status(500).send('DB error');
+    // send confirmation email if configured
+    d.get('SELECT b.*, r.title as room_title FROM bookings b LEFT JOIN rooms r ON r.id=b.room_id WHERE b.id = ?', [booking_id], async (rowErr, bookingRow) => {
+      if (!rowErr && bookingRow) {
+        try { await mailer.sendBookingConfirmation(bookingRow); } catch(e){ console.error('Email error', e); }
+      }
+    });
     res.json({ success: true });
     d.close();
   });
@@ -33,12 +41,18 @@ router.post('/googlepay/process', (req, res) => {
   if (!booking_id || !paymentData) return res.status(400).json({ success: false, message: 'Missing data' });
 
   // In production: validate paymentData and send to payment gateway for capture/verification.
-  // For demo: mark booking as paid and return success.
+  // For demo: mark booking as paid and return success. Send confirmation email if possible.
   const d = db.getDb();
-  d.run('UPDATE bookings SET paid = 1 WHERE id = ?', [booking_id], (err) => {
+  d.run('UPDATE bookings SET paid = 1 WHERE id = ?', [booking_id], function(err) {
     if (err) return res.status(500).json({ success: false, message: 'DB error' });
-    res.json({ success: true });
-    d.close();
+    // fetch booking to send email
+    d.get('SELECT b.*, r.title as room_title FROM bookings b LEFT JOIN rooms r ON r.id=b.room_id WHERE b.id = ?', [booking_id], async (rowErr, bookingRow) => {
+      if (!rowErr && bookingRow) {
+        try { await mailer.sendBookingConfirmation(bookingRow); } catch(e){ console.error('Email error', e); }
+      }
+      d.close();
+      return res.json({ success: true });
+    });
   });
 });
 

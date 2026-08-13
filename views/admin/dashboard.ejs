@@ -1,18 +1,19 @@
 <%- include('../layout', { title: 'Admin Dashboard' }) %>
 <section>
   <h2>Bookings</h2>
-  <p><a href="/admin/rooms">Manage Rooms</a></p>
+  <p><a href="/admin/rooms">Manage Rooms</a> | <a href="/admin/site-settings">Site Settings</a> | <a href="/admin/change-password">Change Password</a> | <a href="/admin/logout">Logout</a></p>
   <table>
-    <thead><tr><th>ID</th><th>Name</th><th>Room</th><th>Total</th><th>Paid</th><th>When</th></tr></thead>
+    <thead><tr><th>ID</th><th>Name</th><th>Room</th><th>Total</th><th>Paid</th><th>When</th><th>Actions</th></tr></thead>
     <tbody>
       <% bookings.forEach(function(b){ %>
         <tr>
-          <td><%= b.id %></td>
+          <td><a href="/admin/bookings/<%= b.id %>"><%= b.id %></a></td>
           <td><%= b.name %></td>
           <td><%= b.room_id %></td>
           <td><%= b.total %></td>
           <td><%= b.paid ? 'Yes' : 'No' %></td>
           <td><%= b.created_at %></td>
+          <td><a href="/admin/bookings/<%= b.id %>">View</a></td>
         </tr>
       <% }) %>
     </tbody>
