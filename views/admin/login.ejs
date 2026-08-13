@@ -1,0 +1,12 @@
+<%- include('../layout', { title: 'Admin Login' }) %>
+<section>
+  <h2>Admin login</h2>
+  <% if (typeof error !== 'undefined') { %>
+    <p class="error"><%= error %></p>
+  <% } %>
+  <form method="post" action="/admin/login">
+    <label>Username <input name="username"></label><br/>
+    <label>Password <input name="password" type="password"></label><br/>
+    <button type="submit">Login</button>
+  </form>
+</section>
